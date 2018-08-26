@@ -7,7 +7,9 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   modules: {
-    socket: moduleSocket,
+    sdp: moduleSocket,
+  },
+  mutations: {
   }
 })
 

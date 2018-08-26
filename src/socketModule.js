@@ -17,10 +17,12 @@ export const moduleSocket = {
         console.error(state, event)
       },
       SOCKET_ONMESSAGE (state, message)  {
-        console.log('raw->', message);
-        const data = JSON.parse(message);
+        console.log('raw->', message)
+        const data = JSON.parse(message.data)
         
-        if (['added', 'changed', 'removed'].includes(data.msg)) {
+        if (['added', 'changed', 'removed'].includes(data.msg)) {            
+            if(state.collections[data.table] === undefined)
+                state.collections[data.table] = []
             const collection = state.collections[data.table]
             if (data.msg === 'added') {
                 state.collections[data.table] = [...collection, data.doc]

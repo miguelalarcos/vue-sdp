@@ -11,51 +11,72 @@ class Deferred{
     }
 }
 
-export const SDP = {}
-SDP.install = function (Vue) {
-    Vue.mixin({
-        created(){
-            this.unsubs = []
-            this.$options.sockets.onmessage = (data) => {
-                if (data.msg === 'result') {
+export const SDP_Mixin = {
+        data: function(){
+            return {
+                _subs: {}
+            }
+        },
+        /*if (data.msg === 'result') {
                     const deferred = deferreds[data.id];
                     deferred.resolve(data.result);
+                }*/
+        created(){
+            this.$options.sockets.onmessage = (data) => {
+                data = JSON.parse(data.data)
+                if (data.msg === 'ready') {                    
+                    if(Object.keys({...this._subs}).includes(data.id)){
+                        console.log('******************************************')
+                        this._subs = {...this._subs, [data.id]: true}
+                    }
                 }
             }
         },
         beforeDestroy() {
-            this.unsubs.forEach(subId => {
+            Object.keys({...this._subs}).forEach(subId => {
+                console.log('before destroy, send unsub')
                 sendUnSub(this.$socket, subId)
             });
             delete this.$options.sockets.onmessage
-        }
-    })
-
-    Vue.prototype.$sub =  function (name, filter, subId) {  
-        if(subId){
-            delete subs[subId]
-            this.unsubs = this.unsubs.filter(value => value === subId)
-            sendUnSub(this.$socket, subId)    
-        }
-        id += 1
-        subs[id] = {name, id, filter}
-        this.unsubs.push(id)
-        sendSub(this.$socket, name, id, filter)
-        return id
-    }
+        },
+        methods: {
+            $subsReady(){
+                console.log('$subsReady()')
+                Object.values({...this._subs}).forEach(ready => {
+                    if(ready === false)
+                        return false
+                })
+                return true
+            },
+        $sub(name, filter, subId) {
+            console.log('sub', name, filter, subId)
+            if(subId){
+                delete subs[subId]
+                // eslint-disable-next-line
+                const { [subId]: value, ...tmp } = this._subs
+                this._subs = tmp
+                console.log('send unsub')
+                sendUnSub(this.$socket, subId)    
+            }
+            id += 1
+            subs[id] = {name, id: id+'', filter}
+            this._subs  = {...this._subs, [id]: false}
+            sendSub(this.$socket, name, id+'', filter)
+            return id+''
+        },
 
     /*Vue.prototype.$unsub = function (subId) {
         delete subs[subId]
         this.unsubs = this.unsubs.filter(value => value === subId)
         sendUnSub(this.$socket, subId)
     }*/
-
-    Vue.prototype.$rpc = function (name, params) {
+        $rpc(name, params){
           id += 1;
           const deferred = new Deferred()
           deferreds[id] = deferred
-          sendRPC(this.$socket, name, id, params)
+          sendRPC(this.$socket, name, id+'', params)
           return deferred.promise
+        }
     }
 }
 
