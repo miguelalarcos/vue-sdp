@@ -1,3 +1,54 @@
+const reconnectInterval = 1000
+class RWS{
+    constructor(){
+        this.ws = null
+        this.components = []
+    }
+    add(component){
+        this.components.push(component)
+    }
+    remove(component){
+        this.components = this.components.filter((c) => c === component)
+    }
+    onData(data){
+        if (data.msg === 'ready') {
+            this.components.forEach(c => {
+                if(Object.keys({...c._subs}).includes(data.id)){
+                    c._subs = {...c._subs, [data.id]: true}
+                }
+            })           
+        }
+    }
+}
+const rws = new RWS()
+let ws
+export function connect(url, store) {
+    ws = new WebSocket(url)
+    rws.ws = ws
+    ws.onopen = function() {
+        console.log('socket open')
+    }
+    ws.onerror = function() {
+        console.log('socket error')
+    }
+    ws.onclose = function() {
+        console.log('socket close')
+        setTimeout(() => connect(url, store), reconnectInterval)
+    }
+    ws.onmessage = function(event) {
+        console.log('raw message > ', event.data)
+        const data = JSON.parse(event.data)
+        rws.onData(data)
+        if (data.msg === 'result') {
+            const deferred = deferreds[data.id]
+            deferred.resolve(data.result)
+        }else{
+            store.commit('SOCKET_ONMESSAGE', data)
+        }
+    }
+}
+//connect()
+
 let id = 0
 let subs = {}
 export let deferreds = {}
@@ -17,27 +68,16 @@ export const SDP_Mixin = {
                 _subs: {}
             }
         },
-        /*if (data.msg === 'result') {
-                    const deferred = deferreds[data.id];
-                    deferred.resolve(data.result);
-                }*/
         created(){
-            this.$options.sockets.onmessage = (data) => {
-                data = JSON.parse(data.data)
-                if (data.msg === 'ready') {                    
-                    if(Object.keys({...this._subs}).includes(data.id)){
-                        console.log('******************************************')
-                        this._subs = {...this._subs, [data.id]: true}
-                    }
-                }
-            }
+            this.rws = rws
+            this.rws.add(this)
         },
         beforeDestroy() {
             Object.keys({...this._subs}).forEach(subId => {
                 console.log('before destroy, send unsub')
-                sendUnSub(this.$socket, subId)
+                sendUnSub(this.rws.ws, subId)
             });
-            delete this.$options.sockets.onmessage
+            this.rws.remove(this)
         },
         methods: {
             $subsReady(){
@@ -56,12 +96,12 @@ export const SDP_Mixin = {
                 const { [subId]: value, ...tmp } = this._subs
                 this._subs = tmp
                 console.log('send unsub')
-                sendUnSub(this.$socket, subId)    
+                sendUnSub(this.rws.ws, subId)    
             }
             id += 1
             subs[id] = {name, id: id+'', filter}
             this._subs  = {...this._subs, [id]: false}
-            sendSub(this.$socket, name, id+'', filter)
+            sendSub(this.rws.ws, name, id+'', filter)
             return id+''
         },
 
@@ -74,7 +114,7 @@ export const SDP_Mixin = {
           id += 1;
           const deferred = new Deferred()
           deferreds[id] = deferred
-          sendRPC(this.$socket, name, id+'', params)
+          sendRPC(this.rws.ws, name, id+'', params)
           return deferred.promise
         }
     }

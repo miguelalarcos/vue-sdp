@@ -2,9 +2,11 @@
   <div v-if="ready">
     <h1>{{ msg }}</h1>
     <button @click="color='red'">red</button>
-    <div v-bind:key="c.id" v-for="c in myCars()">
+    <div v-bind:key="c.id" v-for="c in myCars">
       {{ c.matricula }}
     </div>  
+    <button @click="suma">2 + 3 = </button>
+    <span>{{valor}}</span>
   </div>
   <div v-else>
     <span>loading...</span>
@@ -20,15 +22,16 @@ export default {
   mixins: [SDP_Mixin],
   data(){
     return {
-      color: 'blue'
+      color: 'blue',
+      valor: 0
     }
   },
   props: {
     msg: String
   },
   methods: {
-    myCars(){
-      return this.$store.state.sdp.collections.cars
+    async suma(){
+      this.valor = await this.$rpc('add', {a: 2, b: 3} )
     }
   },
   computed: {
@@ -38,6 +41,9 @@ export default {
     },
     ready(){
       return this.$subsReady()
+    },
+    myCars(){
+      return this.$store.state.sdp.collections.cars
     }
   },
   watch: {

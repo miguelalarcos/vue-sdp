@@ -16,29 +16,29 @@ export const moduleSocket = {
       SOCKET_ONERROR (state, event)  {
         console.error(state, event)
       },
-      SOCKET_ONMESSAGE (state, message)  {
-        console.log('raw->', message)
-        const data = JSON.parse(message.data)
-        
+      SOCKET_ONMESSAGE (state, data)  {
+        console.log('data->', data)
         if (['added', 'changed', 'removed'].includes(data.msg)) {            
             if(state.collections[data.table] === undefined)
                 state.collections[data.table] = []
             const collection = state.collections[data.table]
             if (data.msg === 'added') {
-                state.collections[data.table] = [...collection, data.doc]
+                state.collections = {...state.collections, [data.table]: [...collection, data.doc]}
             } else if (data.msg === 'changed') {
                 const index = collection.findIndex(item => item._id === data.doc._id)
-                state.collections[data.table] = [
+                const tmp = [
                     ...collection.slice(0, index),
                     data.doc,
                     ...collection.slice(index + 1)
                 ]
+                state.collections = {...state.collections, [data.table]: tmp}
             } else {
                 const index = collection.findIndex(item => item._id === data.doc._id)
-                state.collections[data.table] = [
+                let tmp = [
                     ...collection.slice(0, index),
                     ...collection.slice(index + 1)
                 ]
+                state.collections = {...state.collections, [data.table]: tmp}
             }
         } else if (data.msg === 'error') { 
             console.log('error', data.error);
