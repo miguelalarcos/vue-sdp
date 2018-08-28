@@ -1,3 +1,6 @@
+# example of use
+
+```html
 <template>
   <div v-if="ready">
     <h1>{{ msg }}</h1>
@@ -67,3 +70,4 @@ export default {
   cursor: pointer;
 }
 </style>
+```

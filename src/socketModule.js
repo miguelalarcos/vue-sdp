@@ -5,20 +5,20 @@ export const moduleSocket = {
         collections: {}
     },
     mutations: { 
-      // eslint-disable-next-line
-      SOCKET_ONOPEN (state, event) {
+      SOCKET_ONOPEN (state) {
         state.isConnected = true
       },
-      // eslint-disable-next-line
-      SOCKET_ONCLOSE (state, event)  {
+      SOCKET_ONCLOSE (state)  {
         state.isConnected = false
       },
       SOCKET_ONERROR (state, event)  {
         console.error(state, event)
       },
       SOCKET_ONMESSAGE (state, data)  {
-        console.log('data->', data)
-        if (['added', 'changed', 'removed'].includes(data.msg)) {            
+        if(data.msg === 'initializing'){
+            state.collections = {...state.collections, [data.table]: []}
+        }
+        else if (['added', 'changed', 'removed'].includes(data.msg)) {            
             if(state.collections[data.table] === undefined)
                 state.collections[data.table] = []
             const collection = state.collections[data.table]
@@ -43,13 +43,6 @@ export const moduleSocket = {
         } else if (data.msg === 'error') { 
             console.log('error', data.error);
         }
-      },
-      // mutations for reconnect methods
-      SOCKET_RECONNECT(state, count) {
-        console.info(state, count)
-      },
-      SOCKET_RECONNECT_ERROR(state) {
-        state.reconnectError = true;
       }
-  }
+    }
 }

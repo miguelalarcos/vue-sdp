@@ -27,12 +27,20 @@ export function connect(url, store) {
     rws.ws = ws
     ws.onopen = function() {
         console.log('socket open')
+        Object.values(subs).forEach(item => {
+            const {name, id, filter} = item
+            sendSub(rws.ws, name, id, filter)            
+        });
+        store.commit('SOCKET_ONOPEN')
     }
     ws.onerror = function() {
         console.log('socket error')
     }
     ws.onclose = function() {
         console.log('socket close')
+        store.commit('SOCKET_ONCLOSE')
+        Object.values(deferreds).forEach(d => d.reject())
+        deferreds = {}
         setTimeout(() => connect(url, store), reconnectInterval)
     }
     ws.onmessage = function(event) {
@@ -42,6 +50,7 @@ export function connect(url, store) {
         if (data.msg === 'result') {
             const deferred = deferreds[data.id]
             deferred.resolve(data.result)
+            delete deferreds[data.id]
         }else{
             store.commit('SOCKET_ONMESSAGE', data)
         }
@@ -51,7 +60,7 @@ export function connect(url, store) {
 
 let id = 0
 let subs = {}
-export let deferreds = {}
+let deferreds = {}
 
 class Deferred{
     constructor() {
