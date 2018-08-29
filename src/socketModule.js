@@ -25,20 +25,20 @@ export const moduleSocket = {
             if (data.msg === 'added') {
                 state.collections = {...state.collections, [data.table]: [...collection, data.doc]}
             } else if (data.msg === 'changed') {
-                const index = collection.findIndex(item => item._id === data.doc._id)
+                const index = collection.findIndex(item => item.id === data.doc.id)
                 const tmp = [
                     ...collection.slice(0, index),
                     data.doc,
                     ...collection.slice(index + 1)
                 ]
                 state.collections = {...state.collections, [data.table]: tmp}
-            } else {
-                const index = collection.findIndex(item => item._id === data.doc._id)
+            } else {                                
+                const index = collection.findIndex(item => item.id === data.doc_id)
                 let tmp = [
                     ...collection.slice(0, index),
                     ...collection.slice(index + 1)
                 ]
-                state.collections = {...state.collections, [data.table]: tmp}
+                state.collections = {...state.collections, [data.table]: tmp}                
             }
         } else if (data.msg === 'error') { 
             console.log('error', data.error);

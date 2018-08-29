@@ -1,20 +1,17 @@
 <template>
-  <div v-if="ready">
+  <div v-if="$subsReady">
     <h1>{{ msg }}</h1>
     <button @click="color=color==='red'?'blue':'red'">red/blue</button>
-    <div class="pointer" @click="changeColor(c.color==='red'?'blue':'red')" v-bind:key="c.id" v-for="c in myCars">
+    <div class="pointer" @click="changeColor(c.id, c.color==='red'?'blue':'red')" v-bind:key="c.id" v-for="c in myCars">
       {{ c.matricula }}
     </div>  
     <button @click="suma">2 + 3 = </button>
     <span>{{valor}}</span>
   </div>
-  <div v-else>
-    <span>loading...</span>
-  </div>
 </template>
 
 <script>
-import { SDP_Mixin } from '../sdp'
+import { SDP_Mixin, filter } from '../sdp'
 let unsub = null
 
 export default {
@@ -33,8 +30,8 @@ export default {
     async suma(){
       this.valor = await this.$rpc('add', {a: 2, b: 3})
     },
-    changeColor(color){
-      this.$rpc('change_color', {color})
+    changeColor(id, color){
+      this.$rpc('change_color', {id, color})
     }
   },
   created(){
@@ -49,7 +46,7 @@ export default {
       return this.$subsReady()
     },
     myCars(){
-      return this.$store.state.sdp.collections.cars.filter((car) => car.color == this.color)
+      return filter(this.$store.state.sdp.collections.cars, (car) => car.color == this.color)
     }
   },
   watch: {

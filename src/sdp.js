@@ -1,3 +1,10 @@
+export function filter(c, f){
+    if(c)
+      return c.filter(f)
+    else
+      return []
+  }
+
 const reconnectInterval = 1000
 class RWS{
     constructor(){
@@ -22,6 +29,7 @@ class RWS{
 }
 const rws = new RWS()
 let ws
+let itemCounter = {}
 export function connect(url, store) {
     ws = new WebSocket(url)
     rws.ws = ws
@@ -52,6 +60,22 @@ export function connect(url, store) {
             deferred.resolve(data.result)
             delete deferreds[data.id]
         }else{
+            if(data.msg === 'added'){
+                let id = data.doc.id
+                if(itemCounter[id]){
+                    itemCounter[id] += 1
+                } else {
+                    itemCounter[id] = 1
+                }
+            }
+            if(data.msg === 'removed'){
+                itemCounter[data.doc_id] -= 1
+                if(itemCounter[data.doc_id] === 0){
+                    delete itemCounter[id]
+                    store.commit('SOCKET_ONMESSAGE', data)
+                }
+                return    
+            }
             store.commit('SOCKET_ONMESSAGE', data)
         }
     }
@@ -90,7 +114,9 @@ export const SDP_Mixin = {
         },
         methods: {
             $subsReady(){
-                console.log('$subsReady()')
+                console.log('$subsReady()', this.$store)
+                if(!this.$store.state.sdp.isConnected)
+                    return false
                 Object.values({...this._subs}).forEach(ready => {
                     if(ready === false)
                         return false

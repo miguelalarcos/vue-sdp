@@ -5,7 +5,7 @@
   <div v-if="ready">
     <h1>{{ msg }}</h1>
     <button @click="color=color==='red'?'blue':'red'">red/blue</button>
-    <div class="pointer" @click="changeColor(c.color==='red'?'blue':'red')" v-bind:key="c.id" v-for="c in myCars">
+    <div class="pointer" @click="changeColor(c.id, c.color==='red'?'blue':'red')" v-bind:key="c.id" v-for="c in myCars">
       {{ c.matricula }}
     </div>  
     <button @click="suma">2 + 3 = </button>
@@ -36,8 +36,8 @@ export default {
     async suma(){
       this.valor = await this.$rpc('add', {a: 2, b: 3})
     },
-    changeColor(color){
-      this.$rpc('change_color', {color})
+    changeColor(id, color){
+      this.$rpc('change_color', {id, color})
     }
   },
   created(){
