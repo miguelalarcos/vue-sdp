@@ -2,7 +2,8 @@ export const moduleSocket = {
     state: {
         isConnected: false,
         reconnectError: false,
-        collections: {}
+        collections: {},
+        error: ''
     },
     mutations: { 
       SOCKET_ONOPEN (state) {
@@ -12,7 +13,7 @@ export const moduleSocket = {
         state.isConnected = false
       },
       SOCKET_ONERROR (state, event)  {
-        console.error(state, event)
+        state.error = event
       },
       SOCKET_ONMESSAGE (state, data)  {
         if(data.msg === 'initializing'){
@@ -41,7 +42,7 @@ export const moduleSocket = {
                 state.collections = {...state.collections, [data.table]: tmp}                
             }
         } else if (data.msg === 'error') { 
-            console.log('error', data.error);
+            state.error = data.error
         }
       }
     }

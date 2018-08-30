@@ -39,7 +39,6 @@ export default {
   },
   computed: {
     colorChange(){
-      console.log('computed color change')
       return this.color
     },
     ready(){
@@ -51,7 +50,6 @@ export default {
   },
   watch: {
     colorChange(color){
-      console.log('watch', color)
       unsub = this.$sub('cars_of_color', {color}, unsub)
     }
   }

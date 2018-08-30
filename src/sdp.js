@@ -34,7 +34,6 @@ export function connect(url, store) {
     ws = new WebSocket(url)
     rws.ws = ws
     ws.onopen = function() {
-        console.log('socket open')
         Object.values(subs).forEach(item => {
             const {name, id, filter} = item
             sendSub(rws.ws, name, id, filter)            
@@ -42,17 +41,16 @@ export function connect(url, store) {
         store.commit('SOCKET_ONOPEN')
     }
     ws.onerror = function() {
-        console.log('socket error')
+
     }
     ws.onclose = function() {
-        console.log('socket close')
         store.commit('SOCKET_ONCLOSE')
         Object.values(deferreds).forEach(d => d.reject())
         deferreds = {}
+        itemCounter = {}
         setTimeout(() => connect(url, store), reconnectInterval)
     }
     ws.onmessage = function(event) {
-        console.log('raw message > ', event.data)
         const data = JSON.parse(event.data)
         rws.onData(data)
         if (data.msg === 'result') {
@@ -107,14 +105,12 @@ export const SDP_Mixin = {
         },
         beforeDestroy() {
             Object.keys({...this._subs}).forEach(subId => {
-                console.log('before destroy, send unsub')
                 sendUnSub(this.rws.ws, subId)
             });
             this.rws.remove(this)
         },
         methods: {
             $subsReady(){
-                console.log('$subsReady()', this.$store)
                 if(!this.$store.state.sdp.isConnected)
                     return false
                 Object.values({...this._subs}).forEach(ready => {
@@ -124,13 +120,11 @@ export const SDP_Mixin = {
                 return true
             },
         $sub(name, filter, subId) {
-            console.log('sub', name, filter, subId)
             if(subId){
                 delete subs[subId]
                 // eslint-disable-next-line
                 const { [subId]: value, ...tmp } = this._subs
                 this._subs = tmp
-                console.log('send unsub')
                 sendUnSub(this.rws.ws, subId)    
             }
             id += 1
@@ -156,7 +150,6 @@ export const SDP_Mixin = {
 }
 
 function send(socket, data) {
-    console.log('=>', data)
     socket.send(JSON.stringify(data))
   }
 
