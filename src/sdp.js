@@ -52,6 +52,7 @@ export function connect(url, store) {
     }
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data)
+        console.log('>', data)
         rws.onData(data)
         if (data.msg === 'result') {
             const deferred = deferreds[data.id]
