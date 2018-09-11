@@ -2,7 +2,8 @@ export const moduleSocket = {
     state: {
         isConnected: false,
         reconnectError: false,
-        collections: {},
+        subs: {},
+        ready: {},
         error: ''
     },
     mutations: { 
@@ -17,29 +18,33 @@ export const moduleSocket = {
       },
       SOCKET_ONMESSAGE (state, data)  {
         if(data.msg === 'initializing'){
-            state.collections = {...state.collections, [data.table]: []}
+            state.subs = {...state.subs, [data.id]: []}
+            state.ready = {...state.ready, [data.id]: false}
+        }
+        else if(data.msg === 'ready'){
+            state.ready = {...state.ready, [data.id]: true}
         }
         else if (['added', 'changed', 'removed'].includes(data.msg)) {            
-            if(state.collections[data.table] === undefined)
-                state.collections[data.table] = []
-            const collection = state.collections[data.table]
+            //if(state.subs[data.id] === undefined)
+            //    state.subs[data.id] = []
+            const sub = state.subs[data.id]
             if (data.msg === 'added') {
-                state.collections = {...state.collections, [data.table]: [...collection, data.doc]}
+                state.subs = {...state.subs, [data.id]: [...sub, data.doc]}
             } else if (data.msg === 'changed') {
-                const index = collection.findIndex(item => item.id === data.doc.id)
+                const index = sub.findIndex(item => item.id === data.doc.id)
                 const tmp = [
-                    ...collection.slice(0, index),
+                    ...sub.slice(0, index),
                     data.doc,
-                    ...collection.slice(index + 1)
+                    ...sub.slice(index + 1)
                 ]
-                state.collections = {...state.collections, [data.table]: tmp}
+                state.subs = {...state.subs, [data.table]: tmp}
             } else {                                
-                const index = collection.findIndex(item => item.id === data.doc_id)
+                const index = sub.findIndex(item => item.id === data.doc_id)
                 let tmp = [
-                    ...collection.slice(0, index),
-                    ...collection.slice(index + 1)
+                    ...sub.slice(0, index),
+                    ...sub.slice(index + 1)
                 ]
-                state.collections = {...state.collections, [data.table]: tmp}                
+                state.subs = {...state.subs, [data.table]: tmp}                
             }
         } else if (data.msg === 'error') { 
             state.error = data.error

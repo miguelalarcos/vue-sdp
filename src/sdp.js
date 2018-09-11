@@ -9,15 +9,15 @@ const reconnectInterval = 1000
 class RWS{
     constructor(){
         this.ws = null
-        this.components = []
+        //this.components = []
     }
-    add(component){
+    /*add(component){
         this.components.push(component)
     }
     remove(component){
         this.components = this.components.filter((c) => c === component)
-    }
-    onData(data){
+    }*/
+    /*onData(data){
         if (data.msg === 'ready') {
             this.components.forEach(c => {
                 if(Object.keys({...c._subs}).includes(data.id)){
@@ -25,11 +25,11 @@ class RWS{
                 }
             })           
         }
-    }
+    }*/
 }
 const rws = new RWS()
 let ws
-let itemCounter = {}
+//let itemCounter = {}
 export function connect(url, store) {
     ws = new WebSocket(url)
     rws.ws = ws
@@ -47,34 +47,18 @@ export function connect(url, store) {
         store.commit('SOCKET_ONCLOSE')
         Object.values(deferreds).forEach(d => d.reject())
         deferreds = {}
-        itemCounter = {}
+        //itemCounter = {}
         setTimeout(() => connect(url, store), reconnectInterval)
     }
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data)
         console.log('>', data)
-        rws.onData(data)
+        //rws.onData(data)
         if (data.msg === 'result') {
             const deferred = deferreds[data.id]
             deferred.resolve(data.result)
             delete deferreds[data.id]
         }else{
-            if(data.msg === 'added'){
-                let id = data.doc.id
-                if(itemCounter[id]){
-                    itemCounter[id] += 1
-                } else {
-                    itemCounter[id] = 1
-                }
-            }
-            if(data.msg === 'removed'){
-                itemCounter[data.doc_id] -= 1
-                if(itemCounter[data.doc_id] === 0){
-                    delete itemCounter[id]
-                    store.commit('SOCKET_ONMESSAGE', data)
-                }
-                return    
-            }
             store.commit('SOCKET_ONMESSAGE', data)
         }
     }
@@ -97,42 +81,47 @@ class Deferred{
 export const SDP_Mixin = {
         data: function(){
             return {
-                _subs: {}
+                _subs: []
             }
         },
         created(){
             this.rws = rws
-            this.rws.add(this)
+            //this.rws.add(this)
         },
         beforeDestroy() {
-            Object.keys({...this._subs}).forEach(subId => {
+            this._subs.forEach(subId => {
                 sendUnSub(this.rws.ws, subId)
             });
-            this.rws.remove(this)
+            //this.rws.remove(this)
         },
         methods: {
             $subsReady(){
-                if(!this.$store.state.sdp.isConnected)
+                /*if(!this.$store.state.sdp.isConnected)
                     return false
                 Object.values({...this._subs}).forEach(ready => {
                     if(ready === false)
                         return false
                 })
+                */
                 return true
             },
         $sub(name, filter, subId) {
-            if(subId){
+            /*if(subId){
                 delete subs[subId]
                 // eslint-disable-next-line
                 const { [subId]: value, ...tmp } = this._subs
                 this._subs = tmp
                 sendUnSub(this.rws.ws, subId)    
+            }*/
+            if(!this._subs.includes(subId)){
+                this._subs.push(subId)
             }
-            id += 1
-            subs[id] = {name, id: id+'', filter}
-            this._subs  = {...this._subs, [id]: false}
-            sendSub(this.rws.ws, name, id+'', filter)
-            return id+''
+            sendUnSub(this.rws.ws, subId)  
+            //id += 1
+            subs[id] = {name, id: subId, filter}
+            //this._subs  = {...this._subs, [id]: false}
+            sendSub(this.rws.ws, name, subId, filter)
+            //return id+''
         },
 
     /*Vue.prototype.$unsub = function (subId) {
