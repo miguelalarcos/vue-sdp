@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { SDP_Mixin, filter } from '../sdp'
+import { SDP_Mixin } from '../sdp'
 
 export default {
   name: 'HelloWorld',
@@ -33,7 +33,7 @@ export default {
     }
   },
   created(){
-    this.$sub('x_less_than', this.max, 'x_less_than')
+    this.$sub('x_less_than', {max: this.max}, 'x_less_than')
   },
   computed: {
     ready(){
@@ -44,12 +44,12 @@ export default {
       return this.max
     },
     myCounters(){
-      return this.$store.state.sdp.subs.x_less_than_5
+      return this.$store.state.sdp.subs.x_less_than
     }
   },
   watch: {
     maxChange(max){
-      this.$sub('x_less_than', this.max, 'x_less_than')
+      this.$sub('x_less_than', max, 'x_less_than')
     }
   }
 } 

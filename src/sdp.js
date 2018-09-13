@@ -1,35 +1,12 @@
-export function filter(c, f){
-    if(c)
-      return c.filter(f)
-    else
-      return []
-  }
-
 const reconnectInterval = 1000
 class RWS{
     constructor(){
         this.ws = null
-        //this.components = []
     }
-    /*add(component){
-        this.components.push(component)
-    }
-    remove(component){
-        this.components = this.components.filter((c) => c === component)
-    }*/
-    /*onData(data){
-        if (data.msg === 'ready') {
-            this.components.forEach(c => {
-                if(Object.keys({...c._subs}).includes(data.id)){
-                    c._subs = {...c._subs, [data.id]: true}
-                }
-            })           
-        }
-    }*/
 }
 const rws = new RWS()
 let ws
-//let itemCounter = {}
+
 export function connect(url, store) {
     ws = new WebSocket(url)
     rws.ws = ws
@@ -63,7 +40,6 @@ export function connect(url, store) {
         }
     }
 }
-//connect()
 
 let id = 0
 let subs = {}
@@ -79,62 +55,45 @@ class Deferred{
 }
 
 export const SDP_Mixin = {
-        data: function(){
-            return {
-                _subs: []
-            }
-        },
-        created(){
-            this.rws = rws
-            //this.rws.add(this)
-        },
-        beforeDestroy() {
-            this._subs.forEach(subId => {
-                sendUnSub(this.rws.ws, subId)
-            });
-            //this.rws.remove(this)
-        },
-        methods: {
-            $subsReady(){
-                /*if(!this.$store.state.sdp.isConnected)
+    data: function(){
+        return {
+            subs_: []
+        }
+    },
+    created(){
+        this.rws = rws
+
+    },
+    beforeDestroy() {
+        this.subs_.forEach(subId => {
+            sendUnSub(this.rws.ws, subId)
+        });
+    },
+    methods: {
+        $subsReady(){
+            /*if(!this.$store.state.sdp.isConnected)
+                return false
+            Object.values({...this.subs_}).forEach(ready => {
+                if(ready === false)
                     return false
-                Object.values({...this._subs}).forEach(ready => {
-                    if(ready === false)
-                        return false
-                })
-                */
-                return true
-            },
+            })
+            */
+            return true
+        },
         $sub(name, filter, subId) {
-            /*if(subId){
-                delete subs[subId]
-                // eslint-disable-next-line
-                const { [subId]: value, ...tmp } = this._subs
-                this._subs = tmp
-                sendUnSub(this.rws.ws, subId)    
-            }*/
-            if(!this._subs.includes(subId)){
-                this._subs.push(subId)
+            if(!this.subs_.includes(subId)){
+                this.subs_.push(subId)
             }
             sendUnSub(this.rws.ws, subId)  
-            //id += 1
             subs[id] = {name, id: subId, filter}
-            //this._subs  = {...this._subs, [id]: false}
             sendSub(this.rws.ws, name, subId, filter)
-            //return id+''
         },
-
-    /*Vue.prototype.$unsub = function (subId) {
-        delete subs[subId]
-        this.unsubs = this.unsubs.filter(value => value === subId)
-        sendUnSub(this.$socket, subId)
-    }*/
         $rpc(name, params){
-          id += 1;
-          const deferred = new Deferred()
-          deferreds[id] = deferred
-          sendRPC(this.rws.ws, name, id+'', params)
-          return deferred.promise
+        id += 1;
+        const deferred = new Deferred()
+        deferreds[id] = deferred
+        sendRPC(this.rws.ws, name, id+'', params)
+        return deferred.promise
         }
     }
 }

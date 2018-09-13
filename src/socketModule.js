@@ -29,22 +29,27 @@ export const moduleSocket = {
             //    state.subs[data.id] = []
             const sub = state.subs[data.id]
             if (data.msg === 'added') {
-                state.subs = {...state.subs, [data.id]: [...sub, data.doc]}
+                if(!sub.map(x => x.id).includes(data.doc.id))
+                    state.subs = {...state.subs, [data.id]: [...sub, data.doc]}
             } else if (data.msg === 'changed') {
                 const index = sub.findIndex(item => item.id === data.doc.id)
-                const tmp = [
-                    ...sub.slice(0, index),
-                    data.doc,
-                    ...sub.slice(index + 1)
-                ]
-                state.subs = {...state.subs, [data.table]: tmp}
+                if(!sub[index].__timestamp || sub[index].__timestamp < data.doc.__timestamp){
+                    const tmp = [
+                        ...sub.slice(0, index),
+                        data.doc,
+                        ...sub.slice(index + 1)
+                    ]
+                    state.subs = {...state.subs, [data.table]: tmp}
+                }
             } else {                                
                 const index = sub.findIndex(item => item.id === data.doc_id)
-                let tmp = [
-                    ...sub.slice(0, index),
-                    ...sub.slice(index + 1)
-                ]
-                state.subs = {...state.subs, [data.table]: tmp}                
+                if(index !== -1){
+                    let tmp = [
+                        ...sub.slice(0, index),
+                        ...sub.slice(index + 1)
+                    ]
+                    state.subs = {...state.subs, [data.table]: tmp}                
+                }
             }
         } else if (data.msg === 'error') { 
             state.error = data.error
