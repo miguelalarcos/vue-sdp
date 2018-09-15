@@ -1,7 +1,7 @@
 <template>
   <div v-if="$subsReady">
     <h1>{{ msg }}</h1>
-    <div class="pointer" @click="inc(c.id)" v-bind:key="c.id" v-for="c in myCounters">
+    <div class="pointer" @click="inc(c.id, c.x+1)" v-bind:key="c.id" v-for="c in myCounters">
       {{ c.x }}
     </div>  
     <button @click="suma">2 + 3 = </button>
@@ -28,16 +28,17 @@ export default {
     async suma(){
       this.valor = await this.$rpc('add', {a: 2, b: 3})
     },
-    inc(id){
-      this.$rpc('inc', {id})
+    async inc(id, value){
+      this.$rpc('increment', {id, value})
     }
   },
   created(){
-    this.$sub('x_less_than', {max: this.max}, 'x_less_than')
+    this.$sub('x_less_than', {max: this.max})
   },
   computed: {
     ready(){
-      return true
+      return this.$store.state.sdp.ready.x_less_than
+      //return true
       //return this.$subsReady()
     },
     maxChange(){
@@ -49,7 +50,7 @@ export default {
   },
   watch: {
     maxChange(max){
-      this.$sub('x_less_than', max, 'x_less_than')
+      this.$sub('x_less_than', {max})
     }
   }
 } 

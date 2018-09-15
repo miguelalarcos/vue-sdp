@@ -12,8 +12,8 @@ export function connect(url, store) {
     rws.ws = ws
     ws.onopen = function() {
         Object.values(subs).forEach(item => {
-            const {name, id, filter} = item
-            sendSub(rws.ws, name, id, filter)            
+            const {id, filter} = item
+            sendSub(rws.ws, id, filter)            
         });
         store.commit('SOCKET_ONOPEN')
     }
@@ -81,12 +81,13 @@ export const SDP_Mixin = {
             return true
         },
         $sub(name, filter, subId) {
+            subId = subId || name
             if(!this.subs_.includes(subId)){
                 this.subs_.push(subId)
             }
             sendUnSub(this.rws.ws, subId)  
-            subs[id] = {name, id: subId, filter}
-            sendSub(this.rws.ws, name, subId, filter)
+            subs[id] = {id: subId, filter}
+            sendSub(this.rws.ws, subId, filter)
         },
         $rpc(name, params){
         id += 1;
@@ -102,8 +103,9 @@ function send(socket, data) {
     socket.send(JSON.stringify(data))
   }
 
-function sendSub (socket, name, subId, params) {
-    const data = {msg: 'sub', name: name, id: subId, params: params}
+function sendSub (socket, subId, params) {
+    const data = {msg: 'sub', id: subId, params: params}
+    console.log('send sub', data)
     send(socket, data)
 }
 

@@ -33,14 +33,14 @@ export const moduleSocket = {
                     state.subs = {...state.subs, [data.id]: [...sub, data.doc]}
             } else if (data.msg === 'changed') {
                 const index = sub.findIndex(item => item.id === data.doc.id)
-                if(!sub[index].__timestamp || sub[index].__timestamp < data.doc.__timestamp){
+                //if(!sub[index].__timestamp || sub[index].__timestamp < data.doc.__timestamp){
                     const tmp = [
                         ...sub.slice(0, index),
                         data.doc,
                         ...sub.slice(index + 1)
                     ]
-                    state.subs = {...state.subs, [data.table]: tmp}
-                }
+                    state.subs = {...state.subs, [data.id]: tmp}
+                //}
             } else {                                
                 const index = sub.findIndex(item => item.id === data.doc_id)
                 if(index !== -1){
@@ -48,7 +48,7 @@ export const moduleSocket = {
                         ...sub.slice(0, index),
                         ...sub.slice(index + 1)
                     ]
-                    state.subs = {...state.subs, [data.table]: tmp}                
+                    state.subs = {...state.subs, [data.id]: tmp}                
                 }
             }
         } else if (data.msg === 'error') { 
