@@ -12,10 +12,11 @@ export function connect(url, store) {
     rws.ws = ws
     ws.onopen = function() {
         console.log('on open')
-        Object.values(subs).forEach(item => {
+        /*Object.values(subs).forEach(item => {
             const {id, filter} = item
             sendSub(rws.ws, id, filter)            
-        });
+        })
+        */
         store.commit('SOCKET_ONOPEN')
     }
     ws.onerror = function() {
