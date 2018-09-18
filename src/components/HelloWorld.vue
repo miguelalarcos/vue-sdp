@@ -1,5 +1,5 @@
 <template>
-  <div v-if="$subsReady">
+  <div v-if="$subsReady()">
     <h1>{{ msg }}</h1>
     <div class="pointer" @click="inc(c.id, c.x+1)" v-bind:key="c.id" v-for="c in myCounters">
       {{ c.x }}

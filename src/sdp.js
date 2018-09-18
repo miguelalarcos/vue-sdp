@@ -73,7 +73,10 @@ export const SDP_Mixin = {
     },
     methods: {
         $subsReady(){
-            return this.subs_.every(x => this.$store.state.sdp.ready[x])
+            const flags = this.subs_.every(x => this.$store.state.sdp.ready[x])
+            console.log('>>>', flags)
+            return flags
+            //return this.subs_.every(x => this.$store.state.sdp.ready[x])
         },
         $sub(name, filter, subId) {
             subId = subId || name
@@ -85,11 +88,11 @@ export const SDP_Mixin = {
             sendSub(this.rws.ws, subId, filter)
         },
         $rpc(name, params){
-        id += 1;
-        const deferred = new Deferred()
-        deferreds[id] = deferred
-        sendRPC(this.rws.ws, name, id+'', params)
-        return deferred.promise
+            id += 1;
+            const deferred = new Deferred()
+            deferreds[id] = deferred
+            sendRPC(this.rws.ws, name, id+'', params)
+            return deferred.promise
         }
     }
 }
