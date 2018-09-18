@@ -7,6 +7,9 @@
     <button @click="suma">2 + 3 = </button>
     <span>{{valor}}</span> 
   </div>
+  <div v-else>
+    Loading...
+  </div>
 </template>
 
 <script>
@@ -29,18 +32,13 @@ export default {
       this.valor = await this.$rpc('add', {a: 2, b: 3})
     },
     async inc(id, value){
-      this.$rpc('increment', {id, value})
+      this.$rpc('set_x', {id, value})
     }
   },
   created(){
     this.$sub('x_less_than', {max: this.max})
   },
   computed: {
-    ready(){
-      return this.$store.state.sdp.ready.x_less_than
-      //return true
-      //return this.$subsReady()
-    },
     maxChange(){
       return this.max
     },

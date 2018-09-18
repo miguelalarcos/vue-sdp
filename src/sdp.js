@@ -11,6 +11,7 @@ export function connect(url, store) {
     ws = new WebSocket(url)
     rws.ws = ws
     ws.onopen = function() {
+        console.log('on open')
         Object.values(subs).forEach(item => {
             const {id, filter} = item
             sendSub(rws.ws, id, filter)            
@@ -18,19 +19,19 @@ export function connect(url, store) {
         store.commit('SOCKET_ONOPEN')
     }
     ws.onerror = function() {
-
+        console.log('on error')
     }
     ws.onclose = function() {
+        console.log('on close')
         store.commit('SOCKET_ONCLOSE')
         Object.values(deferreds).forEach(d => d.reject())
         deferreds = {}
-        //itemCounter = {}
         setTimeout(() => connect(url, store), reconnectInterval)
     }
     ws.onmessage = function(event) {
+        console.log('on message')
         const data = JSON.parse(event.data)
         console.log('>', data)
-        //rws.onData(data)
         if (data.msg === 'result') {
             const deferred = deferreds[data.id]
             deferred.resolve(data.result)
@@ -71,14 +72,7 @@ export const SDP_Mixin = {
     },
     methods: {
         $subsReady(){
-            /*if(!this.$store.state.sdp.isConnected)
-                return false
-            Object.values({...this.subs_}).forEach(ready => {
-                if(ready === false)
-                    return false
-            })
-            */
-            return true
+            return this.subs_.every(x => this.$store.state.sdp.ready[x])
         },
         $sub(name, filter, subId) {
             subId = subId || name
