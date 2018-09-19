@@ -5,7 +5,10 @@
       {{ c.x }}
     </div>  
     <button @click="suma">2 + 3 = </button>
-    <span>{{valor}}</span> 
+    <span>{{valor}}</span>
+    <input v-model="x" v-validate="'required'" name="myinput" type="text">
+    <span>{{ errors.first('myinput') }}</span>
+    <button :disabled="errors.any()">guardar</button>
   </div>
   <div v-else>
     Loading...
@@ -13,6 +16,7 @@
 </template>
 
 <script>
+import { mapFields } from 'vuex-map-fields'
 import { SDP_Mixin } from '../sdp'
 
 export default {
@@ -39,6 +43,9 @@ export default {
     this.$sub('x_less_than', {max: this.max})
   },
   computed: {
+    ...mapFields([
+      'form.x'
+    ]),
     maxChange(){
       return this.max
     },

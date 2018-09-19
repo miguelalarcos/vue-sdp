@@ -10,9 +10,11 @@
     "test:e2e": "vue-cli-service test:e2e"
   },
   "dependencies": {
+    "vee-validate": "^2.1.0-beta.9",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "vuex-map-fields": "^1.3.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.0",

@@ -5,7 +5,7 @@
       <HelloWorld msg="Welcome to Your Vue.js App"/>
     </div>
     <div v-else>
-      <span>loading...</span>
+      <span>connecting...</span>
   </div>
   </div>
 </template>
