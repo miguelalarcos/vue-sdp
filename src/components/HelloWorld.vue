@@ -6,9 +6,11 @@
     </div>  
     <button @click="suma">2 + 3 = </button>
     <span>{{valor}}</span>
-    <input v-model="x" v-validate="'required'" name="myinput" type="text">
+    <date-picker v-model="date"></date-picker>
+    <float-input v-model="x" v-validate="{ regex: /^[-+]?[0-9]*\.?[0-9]*$/ }" name="myinput"></float-input>
     <span>{{ errors.first('myinput') }}</span>
-    <button :disabled="errors.any()">guardar</button>
+    <button @click="create_X()" :disabled="errors.any()">create_X</button>
+    <md-datepicker v-model="selectedDate" />
   </div>
   <div v-else>
     Loading...
@@ -17,11 +19,17 @@
 
 <script>
 import { mapFields } from 'vuex-map-fields'
-import { SDP_Mixin } from '../sdp'
+import { SDP_Mixin } from 'msdp'
+import DatePicker from './DatePicker.vue'
+import FloatInput from './FloatInput.vue'
 
 export default {
   name: 'HelloWorld',
   mixins: [SDP_Mixin],
+  components: {
+    DatePicker,
+    FloatInput
+  },
   data(){
     return {
       valor: 0,
@@ -32,6 +40,9 @@ export default {
     msg: String
   },
   methods: {
+    async create_X(){
+      await this.$rpc('create_X', {x: this.$store.state.x})
+    },
     async suma(){
       this.valor = await this.$rpc('add', {a: 2, b: 3})
     },
@@ -44,7 +55,9 @@ export default {
   },
   computed: {
     ...mapFields([
-      'form.x'
+      'form.x',
+      'form.date',
+      'form.selectedDate'
     ]),
     maxChange(){
       return this.max

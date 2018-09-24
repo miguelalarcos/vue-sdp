@@ -11,7 +11,7 @@ export function connect(url, store) {
     ws = new WebSocket(url)
     rws.ws = ws
     ws.onopen = function() {
-        console.log('on open')
+        console.log('on open===')
         /*Object.values(subs).forEach(item => {
             const {id, filter} = item
             sendSub(rws.ws, id, filter)            

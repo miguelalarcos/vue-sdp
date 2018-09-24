@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { SDP_Mixin } from '../sdp'
+import { SDP_Mixin } from 'msdp'
 
 export default {
   name: 'HelloWorld',

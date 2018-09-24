@@ -12,12 +12,12 @@
 
 <script>
 // @ is an alias to /src
-import { SDP_Mixin } from '../sdp'
+//import { SDP_Mixin } from 'msdp'
 import HelloWorld from '@/components/HelloWorld.vue'
 
 export default {
   name: 'home',
-  mixins: [SDP_Mixin],
+  //mixins: [SDP_Mixin],
   components: {
     HelloWorld
   },
